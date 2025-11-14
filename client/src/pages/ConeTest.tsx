@@ -459,22 +459,22 @@ export default function ConeTest() {
 
             {/* Directional clickable buttons overlaid on panel */}
             <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 gap-0">
-              {/* Top */}
-              <div className="col-start-2" />
+              {/* Row 1: empty, up button, empty */}
+              <div />
               <button
                 onClick={() => handleDirectionClick('up')}
                 disabled={!showStimulus || isProcessing}
-                className="col-start-2 hover:bg-white/5 active:bg-white/10 disabled:cursor-not-allowed transition-colors border border-transparent hover:border-white/20"
+                className="hover:bg-white/10 active:bg-white/20 disabled:cursor-not-allowed transition-colors border border-transparent hover:border-white/30"
                 data-testid="button-up"
                 aria-label="Up"
               />
-              <div className="col-start-2" />
+              <div />
 
-              {/* Middle row */}
+              {/* Row 2: left button, empty center, right button */}
               <button
                 onClick={() => handleDirectionClick('left')}
                 disabled={!showStimulus || isProcessing}
-                className="hover:bg-white/5 active:bg-white/10 disabled:cursor-not-allowed transition-colors border border-transparent hover:border-white/20"
+                className="hover:bg-white/10 active:bg-white/20 disabled:cursor-not-allowed transition-colors border border-transparent hover:border-white/30"
                 data-testid="button-left"
                 aria-label="Left"
               />
@@ -482,21 +482,21 @@ export default function ConeTest() {
               <button
                 onClick={() => handleDirectionClick('right')}
                 disabled={!showStimulus || isProcessing}
-                className="hover:bg-white/5 active:bg-white/10 disabled:cursor-not-allowed transition-colors border border-transparent hover:border-white/20"
+                className="hover:bg-white/10 active:bg-white/20 disabled:cursor-not-allowed transition-colors border border-transparent hover:border-white/30"
                 data-testid="button-right"
                 aria-label="Right"
               />
 
-              {/* Bottom */}
-              <div className="col-start-2" />
+              {/* Row 3: empty, down button, empty */}
+              <div />
               <button
                 onClick={() => handleDirectionClick('down')}
                 disabled={!showStimulus || isProcessing}
-                className="col-start-2 hover:bg-white/5 active:bg-white/10 disabled:cursor-not-allowed transition-colors border border-transparent hover:border-white/20"
+                className="hover:bg-white/10 active:bg-white/20 disabled:cursor-not-allowed transition-colors border border-transparent hover:border-white/30"
                 data-testid="button-down"
                 aria-label="Down"
               />
-              <div className="col-start-2" />
+              <div />
             </div>
           </div>
         </div>
