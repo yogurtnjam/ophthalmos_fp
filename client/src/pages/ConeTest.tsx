@@ -166,14 +166,18 @@ export default function ConeTest() {
     
     // Calculate threshold as the average contrast of the last 10 trials (stabilized threshold)
     const lastTrials = coneTrials.slice(-10);
-    const threshold = lastTrials.reduce((sum, t) => sum + t.contrastPercent, 0) / lastTrials.length;
+    const n = lastTrials.length;
+    const threshold = lastTrials.reduce((sum, t) => sum + t.contrastPercent, 0) / n;
     
-    // Calculate standard error (simplified - standard deviation of last 10 thresholds)
-    const thresholdVariance = lastTrials.reduce((sum, t) => {
+    // Calculate standard error properly using sample variance: SE = SD / sqrt(n)
+    // Sample variance uses (n-1) denominator (Bessel's correction)
+    const sumSquaredDiffs = lastTrials.reduce((sum, t) => {
       const diff = t.contrastPercent - threshold;
       return sum + (diff * diff);
-    }, 0) / lastTrials.length;
-    const stdError = Math.sqrt(thresholdVariance);
+    }, 0);
+    const sampleVariance = n > 1 ? sumSquaredDiffs / (n - 1) : 0;
+    const stdDev = Math.sqrt(sampleVariance);
+    const stdError = n > 1 ? stdDev / Math.sqrt(n) : 0;
     
     // Average response time in seconds
     const avgTime = coneTrials.reduce((sum, t) => sum + t.responseTimeMs, 0) / coneTrials.length / 1000;
