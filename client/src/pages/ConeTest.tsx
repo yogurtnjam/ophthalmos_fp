@@ -423,21 +423,22 @@ export default function ConeTest() {
               }}
               data-testid="stimulus-landolt-c"
             >
-              <svg width="120" height="120" viewBox="0 0 120 120">
-                <circle
-                  cx="60"
-                  cy="60"
-                  r="35"
-                  fill="none"
-                  stroke={getStimulusColor(currentPhase.coneType, currentContrast)}
-                  strokeWidth="18"
-                />
-                <rect
-                  x="90"
-                  y="51"
-                  width="30"
-                  height="18"
-                  fill="#AAAAAA"
+              <svg width="140" height="140" viewBox="0 0 140 140">
+                {/* Landolt C using path - proper C shape with clean gap */}
+                <path
+                  d="M 70 20 
+                     A 50 50 0 0 1 120 70
+                     A 50 50 0 0 1 70 120
+                     A 50 50 0 0 1 20 70
+                     A 50 50 0 0 1 70 20
+                     M 70 38
+                     A 32 32 0 0 0 38 70
+                     A 32 32 0 0 0 70 102
+                     A 32 32 0 0 0 102 70
+                     L 102 56
+                     A 32 32 0 0 1 70 38
+                     Z"
+                  fill={getStimulusColor(currentPhase.coneType, currentContrast)}
                 />
               </svg>
             </div>
