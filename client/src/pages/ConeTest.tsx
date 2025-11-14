@@ -29,7 +29,7 @@ const TEST_PHASES: TestPhase[] = [
   { coneType: 'S', label: 'Blue (S-cone)', color: '#4dabf7' },
 ];
 
-const TRIALS_PER_CONE = 30;
+const TRIALS_PER_CONE = 20;
 const INITIAL_CONTRAST = 50; // Start at 50% contrast
 const MIN_CONTRAST = 0.01; // Minimum 0.01%
 const MAX_CONTRAST = 100; // Maximum 100%
@@ -269,8 +269,8 @@ export default function ConeTest() {
                 <li>The ring will be very faint - this is intentional</li>
                 <li>Click the arrow button that matches where the gap is located</li>
                 <li>The test will automatically adjust difficulty based on your responses</li>
-                <li>You will complete 30 trials for each color (Red, Green, Blue)</li>
-                <li>Total testing time: approximately 5-7 minutes</li>
+                <li>You will complete 20 trials for each color (Red, Green, Blue)</li>
+                <li>Total testing time: approximately 5 minutes</li>
               </ul>
             </div>
             
