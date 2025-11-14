@@ -1,8 +1,8 @@
-import { useNavigate } from 'wouter';
+import { useLocation } from 'wouter';
 import { useApp } from '../context/AppContext';
 
 export default function Welcome() {
-  const [, setLocation] = useNavigate();
+  const [, setLocation] = useLocation();
   const { state, setState } = useApp();
   return (
     <div className="card" style={{ textAlign: 'center' }}>

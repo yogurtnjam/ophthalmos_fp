@@ -4,14 +4,11 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppProvider } from './context/AppContext';
-import Welcome from './pages/Welcome';
-import Home from './pages/Home';
+import Questionnaire from './pages/Questionnaire';
 import ConeTest from './pages/ConeTest';
-import Adapt from './pages/Adapt';
-import Simulate from './pages/Simulate';
-import Experiment from './pages/Experiment';
-import Survey from './pages/Survey';
-import Results from './pages/Results';
+import CVDResults from './pages/CVDResults';
+import TaskGames from './pages/TaskGames';
+import Statistics from './pages/Statistics';
 import './styles.css';
 
 function Router() {
@@ -22,24 +19,20 @@ function Router() {
           OPHTHALMOS
         </Link>
         <nav className="nav">
-          <Link to="/home" data-testid="link-home">Home</Link>
-          <Link to="/test/cones" data-testid="link-conetest">Cone Test</Link>
-          <Link to="/adapt" data-testid="link-adapt">Adapt</Link>
-          <Link to="/simulate" data-testid="link-simulate">Simulate</Link>
-          <Link to="/experiment" data-testid="link-experiment">Experiment</Link>
-          <Link to="/results" data-testid="link-results">Results</Link>
+          <Link to="/" data-testid="link-questionnaire">Questionnaire</Link>
+          <Link to="/cone-test" data-testid="link-cone-test">Cone Test</Link>
+          <Link to="/cvd-results" data-testid="link-cvd-results">Results</Link>
+          <Link to="/tasks" data-testid="link-tasks">Tasks</Link>
+          <Link to="/statistics" data-testid="link-statistics">Statistics</Link>
         </nav>
       </header>
 
       <Switch>
-        <Route path="/" component={Welcome} />
-        <Route path="/home" component={Home} />
-        <Route path="/test/cones" component={ConeTest} />
-        <Route path="/adapt" component={Adapt} />
-        <Route path="/simulate" component={Simulate} />
-        <Route path="/experiment" component={Experiment} />
-        <Route path="/survey" component={Survey} />
-        <Route path="/results" component={Results} />
+        <Route path="/" component={Questionnaire} />
+        <Route path="/cone-test" component={ConeTest} />
+        <Route path="/cvd-results" component={CVDResults} />
+        <Route path="/tasks" component={TaskGames} />
+        <Route path="/statistics" component={Statistics} />
       </Switch>
     </div>
   );
