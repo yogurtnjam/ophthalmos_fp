@@ -37,20 +37,42 @@ export function applyOSPresetFilter(hex: string, filterType: OSPresetFilter): st
 }
 
 // Apply custom adaptive filter based on RGB hue adjustments
+// Simplified approach: applies a global hue rotation based on user-adjusted values
+// This is a heuristic that allows users to compensate for perceived hue shifts
+// Note: This is not a scientifically rigorous LMS transformation, but rather
+// a user-customizable filter that may help with color differentiation
 export function applyCustomAdaptiveFilter(hex: string, adjustment: RGBAdjustment): string {
   const { r, g, b } = hexToRgb(hex);
   
-  // Convert to HSL for each channel
-  const rHsl = rgbToHsl(r, 0, 0);
-  const gHsl = rgbToHsl(0, g, 0);
-  const bHsl = rgbToHsl(0, 0, b);
-
-  // Apply hue adjustments
-  const newR = hslToRgb((rHsl.h + adjustment.redHue) % 360, rHsl.s, rHsl.l).r;
-  const newG = hslToRgb((gHsl.h + adjustment.greenHue) % 360, gHsl.s, gHsl.l).g;
-  const newB = hslToRgb((bHsl.h + adjustment.blueHue) % 360, bHsl.s, bHsl.l).b;
-
-  return rgbToHex(Math.round(newR), Math.round(newG), Math.round(newB));
+  // Convert the full color to HSL
+  const hsl = rgbToHsl(r, g, b);
+  
+  // Avoid processing achromatic colors (grays) 
+  if (hsl.s < 0.01) {
+    return hex;
+  }
+  
+  // Calculate average hue offset from default RGB hues
+  // Default: Red=0°, Green=120°, Blue=240°
+  // Adjustment represents user's preferred hue for each primary
+  const avgOffset = (
+    (adjustment.redHue - 0) +
+    (adjustment.greenHue - 120) +
+    (adjustment.blueHue - 240)
+  ) / 3;
+  
+  // Apply global hue shift based on average offset
+  // This provides a consistent transformation across all colors
+  const newHue = (hsl.h + avgOffset + 360) % 360;
+  
+  // Convert back to RGB
+  const newRgb = hslToRgb(newHue, hsl.s, hsl.l);
+  
+  return rgbToHex(
+    Math.round(Math.max(0, Math.min(255, newRgb.r))),
+    Math.round(Math.max(0, Math.min(255, newRgb.g))),
+    Math.round(Math.max(0, Math.min(255, newRgb.b)))
+  );
 }
 
 // Get filter name for display

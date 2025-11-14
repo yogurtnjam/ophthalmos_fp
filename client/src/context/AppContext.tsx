@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
 import { Questionnaire, ConeTestResult, RGBAdjustment, TaskPerformance, OSPresetFilter } from '../../../shared/schema';
+import { apiRequest } from '../lib/queryClient';
 
 interface AppState {
   // Current session ID
@@ -22,6 +23,9 @@ interface AppState {
   
   // Which filter mode is currently active (for task page)
   currentFilterMode: 'custom' | OSPresetFilter;
+  
+  // Has completed custom filter tasks
+  hasCompletedCustomTasks: boolean;
   
   // Navigation state
   currentStep: number; // 0: questionnaire, 1: cone test, 2: adjustment, 3: tasks-custom, 4: tasks-preset, 5: stats
@@ -53,6 +57,7 @@ const defaultState: AppState = {
   taskPerformances: [],
   selectedOSPreset: 'protanopia',
   currentFilterMode: 'custom',
+  hasCompletedCustomTasks: false,
   currentStep: 0,
 };
 
@@ -66,35 +71,99 @@ export function AppProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('cvd-aui-state', JSON.stringify(state));
   }, [state]);
 
-  const updateQuestionnaire = (q: Questionnaire) => {
-    setState(s => ({ ...s, questionnaire: q }));
+  const updateQuestionnaire = async (q: Questionnaire) => {
+    try {
+      // Clear localStorage before creating new session to prevent contamination
+      localStorage.removeItem('cvd-aui-state');
+      
+      // Create new session with questionnaire data
+      const response = await apiRequest('POST', '/api/sessions', q);
+      const data = await response.json();
+      const newSessionId = data.sessionId;
+      
+      // Reset all session-scoped state for new session
+      const freshState = { 
+        ...defaultState,
+        questionnaire: q,
+        sessionId: newSessionId,
+        currentStep: 0
+      };
+      setState(freshState);
+      // Persist clean state immediately
+      localStorage.setItem('cvd-aui-state', JSON.stringify(freshState));
+    } catch (error) {
+      console.error('Failed to save questionnaire:', error);
+      // Clear localStorage and reset to defaults even if API fails
+      localStorage.removeItem('cvd-aui-state');
+      setState({ 
+        ...defaultState,
+        questionnaire: q 
+      });
+    }
   };
 
-  const updateConeTestResult = (result: ConeTestResult) => {
+  const updateConeTestResult = async (result: ConeTestResult) => {
+    const selectedPreset =
+      result.detectedType === 'protan'
+        ? 'protanopia'
+        : result.detectedType === 'deutan'
+        ? 'deuteranopia'
+        : result.detectedType === 'tritan'
+        ? 'tritanopia'
+        : 'grayscale';
+
+    // Capture current sessionId before setState
+    const currentSessionId = state.sessionId;
+
     setState(s => ({
       ...s,
       coneTestResult: result,
-      // Auto-select appropriate OS preset based on detected type
-      selectedOSPreset:
-        result.detectedType === 'protan'
-          ? 'protanopia'
-          : result.detectedType === 'deutan'
-          ? 'deuteranopia'
-          : result.detectedType === 'tritan'
-          ? 'tritanopia'
-          : 'grayscale',
+      selectedOSPreset: selectedPreset,
     }));
+
+    // Save to backend using captured sessionId
+    if (currentSessionId) {
+      try {
+        await apiRequest('POST', `/api/sessions/${currentSessionId}/cone-test`, result);
+      } catch (error) {
+        console.error('Failed to save cone test result:', error);
+      }
+    }
   };
 
-  const updateRGBAdjustment = (adjustment: RGBAdjustment) => {
+  const updateRGBAdjustment = async (adjustment: RGBAdjustment) => {
+    // Capture current sessionId before setState
+    const currentSessionId = state.sessionId;
+
     setState(s => ({ ...s, rgbAdjustment: adjustment }));
+
+    // Save to backend using captured sessionId
+    if (currentSessionId) {
+      try {
+        await apiRequest('POST', `/api/sessions/${currentSessionId}/rgb-adjustment`, adjustment);
+      } catch (error) {
+        console.error('Failed to save RGB adjustment:', error);
+      }
+    }
   };
 
-  const addTaskPerformance = (performance: TaskPerformance) => {
+  const addTaskPerformance = async (performance: TaskPerformance) => {
+    // Capture current sessionId before setState
+    const currentSessionId = state.sessionId;
+
     setState(s => ({
       ...s,
       taskPerformances: [...s.taskPerformances, performance],
     }));
+
+    // Save to backend using captured sessionId
+    if (currentSessionId) {
+      try {
+        await apiRequest('POST', `/api/sessions/${currentSessionId}/tasks`, performance);
+      } catch (error) {
+        console.error('Failed to save task performance:', error);
+      }
+    }
   };
 
   const setSelectedOSPreset = (preset: OSPresetFilter) => {

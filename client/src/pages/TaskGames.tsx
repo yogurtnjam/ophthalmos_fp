@@ -8,7 +8,7 @@ import { TaskPerformance } from '../../../shared/schema';
 type GameState = 'tile-1' | 'tile-2' | 'color-match' | 'card-match' | 'complete';
 
 export default function TaskGames() {
-  const { state, addTaskPerformance } = useApp();
+  const { state, setState, addTaskPerformance } = useApp();
   const [, setLocation] = useLocation();
   const { rgbAdjustment, selectedOSPreset, currentFilterMode } = state;
 
@@ -17,6 +17,7 @@ export default function TaskGames() {
   const [startTime, setStartTime] = useState(0);
   const [clicks, setClicks] = useState(0);
   const [swipes, setSwipes] = useState(0);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Apply filter to color based on current mode
   const applyFilter = (color: string): string => {
@@ -63,15 +64,59 @@ export default function TaskGames() {
   const incrementClick = () => setClicks(c => c + 1);
   const incrementSwipe = () => setSwipes(s => s + 1);
 
-  if (currentGame === 'complete') {
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handlePhaseComplete = () => {
+    if (isProcessing) return; // Prevent double-click
+    
+    if (currentFilterMode === 'custom' && !state.hasCompletedCustomTasks) {
+      // Completed custom filter tasks, switch to OS preset and reset gameplay
+      setIsProcessing(true);
+      setIsTransitioning(true);
+      setState(s => ({ 
+        ...s, 
+        hasCompletedCustomTasks: true,
+        currentFilterMode: s.selectedOSPreset 
+      }));
+      // Reset game state for OS preset phase
+      setTimeout(() => {
+        setCurrentGame('tile-1');
+        setIsGameActive(false);
+        setIsTransitioning(false);
+        setIsProcessing(false);
+      }, 100);
+    } else {
+      // Completed both custom and OS preset tasks, go to statistics
+      setIsProcessing(true);
+      setLocation('/statistics');
+    }
+  };
+
+  if (currentGame === 'complete' && !isTransitioning) {
     return (
       <div className="card" style={{ textAlign: 'center' }}>
-        <h2>Tasks Complete!</h2>
+        <h2>Phase Complete!</h2>
         <p>All games finished with {currentFilterMode} filter.</p>
+        <p className="small">
+          {currentFilterMode === 'custom' && !state.hasCompletedCustomTasks
+            ? `Next: You'll repeat the same tasks with ${selectedOSPreset} filter for comparison.`
+            : 'Proceeding to statistics...'}
+        </p>
         <div className="space"></div>
-        <button className="btn" onClick={() => setLocation('/statistics')} data-testid="button-view-stats">
-          View Statistics
+        <button className="btn" onClick={handlePhaseComplete} data-testid="button-continue">
+          {currentFilterMode === 'custom' && !state.hasCompletedCustomTasks
+            ? 'Start OS Preset Tasks'
+            : 'View Statistics'}
         </button>
+      </div>
+    );
+  }
+  
+  if (isTransitioning) {
+    return (
+      <div className="card" style={{ textAlign: 'center' }}>
+        <h2>Switching to {selectedOSPreset} Filter...</h2>
+        <p>Preparing tasks...</p>
       </div>
     );
   }
