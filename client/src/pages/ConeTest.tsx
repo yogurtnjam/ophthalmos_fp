@@ -406,33 +406,18 @@ export default function ConeTest() {
       <div className="flex-1 flex flex-col items-center justify-center gap-6 p-4">
         {/* Gray stimulus panel */}
         <div className="relative w-full max-w-2xl aspect-[4/3]" style={{ backgroundColor: '#AAAAAA' }} data-testid="stimulus-panel">
-          {/* Fixation cross */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="relative w-16 h-16">
-              <div className="absolute top-1/2 left-0 right-0 h-px bg-gray-600 -translate-y-1/2" />
-              <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gray-600 -translate-x-1/2" />
-            </div>
-          </div>
-
           {/* Landolt C Stimulus */}
           {showStimulus && (
             <div
               className="absolute inset-0 flex items-center justify-center pointer-events-none"
               style={{
+                // rotates gap + ticks together
                 transform: `rotate(${getRotation(currentDirection)}deg)`,
               }}
               data-testid="stimulus-landolt-c"
             >
               <svg width="180" height="180" viewBox="0 0 180 180">
-                {/*
-                  Landolt C: a circle with a thick stroke and a gap on the right.
-                  - centre: (90, 90)
-                  - radius: 50
-                  - strokeWidth: 20 → ring thickness
-                  - strokeDasharray: [dashLength, gapLength]
-                    circumference ≈ 2πr ≈ 314
-                    we use ~270 visible, ~44 gap → tweak to taste
-                */}
+                {/* Landolt C ring */}
                 <circle
                   cx={90}
                   cy={90}
@@ -441,8 +426,66 @@ export default function ConeTest() {
                   stroke={getStimulusColor(currentPhase.coneType, currentContrast)}
                   strokeWidth={20}
                   strokeLinecap="round"
+                  // dash = visible arc, gap = opening of the C (tweak as needed)
                   strokeDasharray="270 44"
                 />
+
+                {/* Tick marks OUTSIDE the C */}
+                {(() => {
+                  const rOuter = 50 + 20 / 2;   // outer radius of the ring = 60
+                  const offset = 8;             // gap between ring and tick start
+                  const tickLen = 12;           // length of each tick
+                  const start = rOuter + offset;
+                  const end = start + tickLen;
+                  const cx = 90;
+                  const cy = 90;
+                  const tickColour = "#2f343b"; // or whatever your crosshair colour is
+
+                  return (
+                    <>
+                      {/* Top tick */}
+                      <line
+                        x1={cx}
+                        y1={cy - end}
+                        x2={cx}
+                        y2={cy - start}
+                        stroke={tickColour}
+                        strokeWidth={3}
+                        strokeLinecap="round"
+                      />
+                      {/* Bottom tick */}
+                      <line
+                        x1={cx}
+                        y1={cy + start}
+                        x2={cx}
+                        y2={cy + end}
+                        stroke={tickColour}
+                        strokeWidth={3}
+                        strokeLinecap="round"
+                      />
+                      {/* Left tick */}
+                      <line
+                        x1={cx - end}
+                        y1={cy}
+                        x2={cx - start}
+                        y2={cy}
+                        stroke={tickColour}
+                        strokeWidth={3}
+                        strokeLinecap="round"
+                      />
+                      {/* Right tick */}
+                      <line
+                        x1={cx + start}
+                        y1={cy}
+                        x2={cx + end}
+                        y2={cy}
+                        stroke={tickColour}
+                        strokeWidth={3}
+                        strokeLinecap="round"
+                      />
+                    </>
+                  );
+                })()}
               </svg>
             </div>
           )}
