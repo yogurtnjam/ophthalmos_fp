@@ -406,6 +406,14 @@ export default function ConeTest() {
       <div className="flex-1 flex flex-col items-center justify-center gap-6 p-4">
         {/* Gray stimulus panel */}
         <div className="relative w-full max-w-2xl aspect-[4/3]" style={{ backgroundColor: '#AAAAAA' }} data-testid="stimulus-panel">
+          {/* Fixation cross */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="relative w-16 h-16">
+              <div className="absolute top-1/2 left-0 right-0 h-px bg-gray-600 -translate-y-1/2" />
+              <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gray-600 -translate-x-1/2" />
+            </div>
+          </div>
+
           {/* Landolt C Stimulus */}
           {showStimulus && (
             <div
@@ -450,8 +458,8 @@ export default function ConeTest() {
                         x2={cx}
                         y2={cy - start}
                         stroke={tickColour}
-                        strokeWidth={3}
-                        strokeLinecap="round"
+                        strokeWidth={2}
+                        strokeLinecap="square"
                       />
                       {/* Bottom tick */}
                       <line
@@ -460,8 +468,8 @@ export default function ConeTest() {
                         x2={cx}
                         y2={cy + end}
                         stroke={tickColour}
-                        strokeWidth={3}
-                        strokeLinecap="round"
+                        strokeWidth={2}
+                        strokeLinecap="square"
                       />
                       {/* Left tick */}
                       <line
@@ -470,8 +478,8 @@ export default function ConeTest() {
                         x2={cx - start}
                         y2={cy}
                         stroke={tickColour}
-                        strokeWidth={3}
-                        strokeLinecap="round"
+                        strokeWidth={2}
+                        strokeLinecap="square"
                       />
                       {/* Right tick */}
                       <line
@@ -480,8 +488,8 @@ export default function ConeTest() {
                         x2={cx + end}
                         y2={cy}
                         stroke={tickColour}
-                        strokeWidth={3}
-                        strokeLinecap="round"
+                        strokeWidth={2}
+                        strokeLinecap="square"
                       />
                     </>
                   );
