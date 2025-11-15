@@ -434,31 +434,32 @@ export default function ConeTest() {
                     strokeDasharray={`${visibleLength} ${gapLength}`}
                     strokeDashoffset={-gapLength / 2}
                   />
-                  
-                  {/* Tick mark at gap position */}
-                  {(() => {
-                    const rOuter = C_RADIUS + C_STROKE / 2;
-                    const offset = 8;
-                    const tickLen = 12;
-                    const start = rOuter + offset;
-                    const end = start + tickLen;
-                    const cx = 90;
-                    const cy = 90;
-                    const tickColour = "#2f343b";
-
-                    return (
-                      <line 
-                        x1={cx + start} 
-                        y1={cy} 
-                        x2={cx + end} 
-                        y2={cy}
-                        stroke={tickColour} 
-                        strokeWidth={2} 
-                        strokeLinecap="square" 
-                      />
-                    );
-                  })()}
                 </g>
+
+                {/* All 4 tick marks (fixed position, not rotated) */}
+                {(() => {
+                  const rOuter = C_RADIUS + C_STROKE / 2;
+                  const offset = 8;
+                  const tickLen = 12;
+                  const start = rOuter + offset;
+                  const end = start + tickLen;
+                  const cx = 90;
+                  const cy = 90;
+                  const tickColour = "#2f343b";
+
+                  return (
+                    <>
+                      <line x1={cx} y1={cy - end} x2={cx} y2={cy - start}
+                            stroke={tickColour} strokeWidth={2} strokeLinecap="square" />
+                      <line x1={cx} y1={cy + start} x2={cx} y2={cy + end}
+                            stroke={tickColour} strokeWidth={2} strokeLinecap="square" />
+                      <line x1={cx - end} y1={cy} x2={cx - start} y2={cy}
+                            stroke={tickColour} strokeWidth={2} strokeLinecap="square" />
+                      <line x1={cx + start} y1={cy} x2={cx + end} y2={cy}
+                            stroke={tickColour} strokeWidth={2} strokeLinecap="square" />
+                    </>
+                  );
+                })()}
               </svg>
             </div>
           )}
