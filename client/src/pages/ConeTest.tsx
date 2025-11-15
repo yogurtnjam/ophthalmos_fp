@@ -208,6 +208,43 @@ export default function ConeTest() {
     setLocation('/cvd-results');
   };
 
+  const handleSkipTest = async () => {
+    // Generate fake results for testing
+    const cvdTypes = ['protan', 'deutan', 'tritan', 'normal'] as const;
+    const randomType = cvdTypes[Math.floor(Math.random() * cvdTypes.length)];
+    
+    // Generate realistic-looking fake metrics based on CVD type
+    const generateFakeMetrics = (isDeficient: boolean): ConeMetrics => {
+      const threshold = isDeficient ? 15 + Math.random() * 25 : 3 + Math.random() * 7;
+      const thresholdDecimal = threshold / 100;
+      const logCS = Math.log10(1 / Math.max(0.0001, thresholdDecimal));
+      const score = Math.round(Math.min(200, Math.max(0, logCS * 75)));
+      
+      let category: "Normal" | "Possible" | "Deficient" = "Normal";
+      if (threshold > 10 || score < 80) category = "Possible";
+      if (threshold > 25 || score < 50) category = "Deficient";
+      
+      return {
+        threshold: Number(threshold.toFixed(2)),
+        stdError: Number((Math.random() * 3).toFixed(2)),
+        trials: 6,
+        avgTime: Number((1.2 + Math.random() * 0.8).toFixed(1)),
+        logCS: Number(logCS.toFixed(2)),
+        score,
+        category,
+      };
+    };
+
+    const L = generateFakeMetrics(randomType === 'protan');
+    const M = generateFakeMetrics(randomType === 'deutan');
+    const S = generateFakeMetrics(randomType === 'tritan');
+
+    const result: ConeTestResult = { L, M, S, detectedType: randomType };
+    await updateConeTestResult(result);
+    setResults(result);
+    setShowResults(true);
+  };
+
   if (!isStarted) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4 bg-background">
@@ -264,15 +301,25 @@ export default function ConeTest() {
               </div>
             </div>
 
-            <Button 
-              onClick={handleStart} 
-              className="w-full"
-              size="lg"
-              data-testid="button-start-test"
-            >
-              <Eye className="mr-2 h-5 w-5" />
-              Start Test
-            </Button>
+            <div className="flex gap-3">
+              <Button 
+                onClick={handleStart} 
+                className="flex-1"
+                size="lg"
+                data-testid="button-start-test"
+              >
+                <Eye className="mr-2 h-5 w-5" />
+                Start Test
+              </Button>
+              <Button 
+                onClick={handleSkipTest} 
+                variant="outline"
+                size="lg"
+                data-testid="button-skip-test"
+              >
+                Skip (Debug)
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>

@@ -394,7 +394,7 @@ function CardMatchingGame({
     return pairs.sort(() => Math.random() - 0.5);
   });
 
-  const [flipped, setFlipped] = useState<number[]>([]);
+  const [flipped, setFlipped] = useState<number[]>(() => cards.map((_, i) => i));
   const [matched, setMatched] = useState<number[]>([]);
 
   const handleCardClick = (index: number) => {
