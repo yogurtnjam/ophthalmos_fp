@@ -36,6 +36,13 @@ const MIN_CONTRAST = 0.01;
 const MAX_CONTRAST = 100;
 const CORRECT_STEP_DOWN = 0.7;
 const INCORRECT_STEP_UP = 1.5;
+const C_RADIUS = 40;          // size of the C
+const C_STROKE = 14;          // thickness of the ring
+const GAP_FRACTION = 0.18;    // fraction of the circle to leave open (≈ 65°)
+
+const circumference = 2 * Math.PI * C_RADIUS;
+const gapLength = circumference * GAP_FRACTION;
+const visibleLength = circumference - gapLength;
 
 export default function ConeTest() {
   const { updateConeTestResult, nextStep } = useApp();
@@ -406,13 +413,6 @@ export default function ConeTest() {
       <div className="flex-1 flex flex-col items-center justify-center gap-6 p-4">
         {/* Gray stimulus panel */}
         <div className="relative w-full max-w-2xl aspect-[4/3]" style={{ backgroundColor: '#AAAAAA' }} data-testid="stimulus-panel">
-          {/* Fixation cross */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="relative w-16 h-16">
-              <div className="absolute top-1/2 left-0 right-0 h-px bg-gray-600 -translate-y-1/2" />
-              <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gray-600 -translate-x-1/2" />
-            </div>
-          </div>
 
           {/* Landolt C Stimulus */}
           {showStimulus && (
@@ -425,72 +425,43 @@ export default function ConeTest() {
               data-testid="stimulus-landolt-c"
             >
               <svg width="180" height="180" viewBox="0 0 180 180">
-                {/* Landolt C ring */}
-                <circle
-                  cx={90}
-                  cy={90}
-                  r={50}
-                  fill="none"
-                  stroke={getStimulusColor(currentPhase.coneType, currentContrast)}
-                  strokeWidth={20}
-                  strokeLinecap="round"
-                  // dash = visible arc, gap = opening of the C (tweak as needed)
-                  strokeDasharray="270 44"
-                />
+                {/* Landolt C – rotated to match currentDirection */}
+                <g transform={`rotate(${getRotation(currentDirection)} 90 90)`}>
+                  <circle
+                    cx={90}
+                    cy={90}
+                    r={C_RADIUS}
+                    fill="none"
+                    stroke={getStimulusColor(currentPhase.coneType, currentContrast)}
+                    strokeWidth={C_STROKE}
+                    strokeLinecap="butt"
+                    strokeDasharray={`${visibleLength} ${gapLength}`}
+                    // optional: shift where the gap starts; tweak if needed
+                    // strokeDashoffset={gapLength / 2}
+                  />
+                </g>
 
                 {/* Tick marks OUTSIDE the C */}
                 {(() => {
-                  const rOuter = 50 + 20 / 2;   // outer radius of the ring = 60
-                  const offset = 8;             // gap between ring and tick start
-                  const tickLen = 12;           // length of each tick
+                  const rOuter = C_RADIUS + C_STROKE / 2;
+                  const offset = 8;
+                  const tickLen = 12;
                   const start = rOuter + offset;
                   const end = start + tickLen;
                   const cx = 90;
                   const cy = 90;
-                  const tickColour = "#2f343b"; // or whatever your crosshair colour is
+                  const tickColour = "#2f343b";
 
                   return (
                     <>
-                      {/* Top tick */}
-                      <line
-                        x1={cx}
-                        y1={cy - end}
-                        x2={cx}
-                        y2={cy - start}
-                        stroke={tickColour}
-                        strokeWidth={2}
-                        strokeLinecap="square"
-                      />
-                      {/* Bottom tick */}
-                      <line
-                        x1={cx}
-                        y1={cy + start}
-                        x2={cx}
-                        y2={cy + end}
-                        stroke={tickColour}
-                        strokeWidth={2}
-                        strokeLinecap="square"
-                      />
-                      {/* Left tick */}
-                      <line
-                        x1={cx - end}
-                        y1={cy}
-                        x2={cx - start}
-                        y2={cy}
-                        stroke={tickColour}
-                        strokeWidth={2}
-                        strokeLinecap="square"
-                      />
-                      {/* Right tick */}
-                      <line
-                        x1={cx + start}
-                        y1={cy}
-                        x2={cx + end}
-                        y2={cy}
-                        stroke={tickColour}
-                        strokeWidth={2}
-                        strokeLinecap="square"
-                      />
+                      <line x1={cx} y1={cy - end} x2={cx} y2={cy - start}
+                            stroke={tickColour} strokeWidth={2} strokeLinecap="square" />
+                      <line x1={cx} y1={cy + start} x2={cx} y2={cy + end}
+                            stroke={tickColour} strokeWidth={2} strokeLinecap="square" />
+                      <line x1={cx - end} y1={cy} x2={cx - start} y2={cy}
+                            stroke={tickColour} strokeWidth={2} strokeLinecap="square" />
+                      <line x1={cx + start} y1={cy} x2={cx + end} y2={cy}
+                            stroke={tickColour} strokeWidth={2} strokeLinecap="square" />
                     </>
                   );
                 })()}
