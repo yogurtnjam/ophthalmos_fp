@@ -215,6 +215,14 @@ function TileGame({
     setOddIndex(Math.floor(Math.random() * tiles));
   };
 
+  // Reset to round 0 and generate new colors when game becomes active
+  useEffect(() => {
+    if (isActive) {
+      setRound(0);
+      generateNewRound();
+    }
+  }, [isActive]);
+
   const { r, g, b } = hexToRgb(baseColor);
   const { h, s, l } = rgbToHsl(r, g, b);
   const diffColor = hslToRgb((h + 15) % 360, s, l);
@@ -289,18 +297,33 @@ function ColorScrollMatcher({
 }) {
   const targetColor = '#e63946';
   const numColors = 20;
-  const [targetIndex] = useState(Math.floor(Math.random() * numColors));
+  const [targetIndex, setTargetIndex] = useState(Math.floor(Math.random() * numColors));
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Generate random colors
-  const [colors] = useState(() => {
-    const cols = Array.from({ length: numColors }, (_, i) => {
-      if (i === targetIndex) return targetColor;
-      const h = Math.floor(Math.random() * 360);
-      return `hsl(${h}, 70%, 50%)`;
-    });
-    return cols;
-  });
+  // Generate random colors - regenerate when game starts
+  const [colors, setColors] = useState<string[]>([]);
+
+  // Regenerate colors when game becomes active
+  useEffect(() => {
+    if (isActive && colors.length === 0) {
+      const newTargetIndex = Math.floor(Math.random() * numColors);
+      setTargetIndex(newTargetIndex);
+      
+      const cols = Array.from({ length: numColors }, (_, i) => {
+        if (i === newTargetIndex) return targetColor;
+        const h = Math.floor(Math.random() * 360);
+        return `hsl(${h}, 70%, 50%)`;
+      });
+      setColors(cols);
+    }
+  }, [isActive, colors.length, numColors]);
+
+  // Reset colors when game becomes inactive
+  useEffect(() => {
+    if (!isActive && colors.length > 0) {
+      setColors([]);
+    }
+  }, [isActive, colors.length]);
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -412,15 +435,29 @@ function CardMatchingGame({
   applyFilter: (color: string) => string;
 }) {
   const cardColors = ['#e63946', '#f4a261', '#2a9d8f', '#e76f51', '#264653', '#e9c46a'];
-  const [cards] = useState(() => {
-    // Create pairs and shuffle
-    const pairs = [...cardColors, ...cardColors];
-    return pairs.sort(() => Math.random() - 0.5);
-  });
+  const [cards, setCards] = useState<string[]>([]);
 
   const [selected, setSelected] = useState<number[]>([]);
   const [matched, setMatched] = useState<number[]>([]);
   const [isChecking, setIsChecking] = useState(false);
+
+  // Generate and shuffle cards when game becomes active
+  useEffect(() => {
+    if (isActive && cards.length === 0) {
+      const pairs = [...cardColors, ...cardColors];
+      setCards(pairs.sort(() => Math.random() - 0.5));
+      setSelected([]);
+      setMatched([]);
+      setIsChecking(false);
+    }
+  }, [isActive, cards.length, cardColors]);
+
+  // Reset cards when game becomes inactive
+  useEffect(() => {
+    if (!isActive && cards.length > 0) {
+      setCards([]);
+    }
+  }, [isActive, cards.length]);
 
   const handleCardClick = (index: number) => {
     // Don't allow clicks if: not active, card already matched, or currently checking
