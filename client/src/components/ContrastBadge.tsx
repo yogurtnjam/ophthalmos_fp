@@ -1,0 +1,16 @@
+import { contrastRatio } from '../utils/color';
+
+interface ContrastBadgeProps {
+  fg: string;
+  bg: string;
+}
+
+export default function ContrastBadge({ fg, bg }: ContrastBadgeProps) {
+  const cr = contrastRatio(fg, bg);
+  const tag = cr >= 7 ? 'AAA' : cr >= 4.5 ? 'AA' : 'Fail';
+  return (
+    <div className="badge" data-testid="contrast-badge">
+      Contrast {cr.toFixed(2)}:1 · {tag}
+    </div>
+  );
+}

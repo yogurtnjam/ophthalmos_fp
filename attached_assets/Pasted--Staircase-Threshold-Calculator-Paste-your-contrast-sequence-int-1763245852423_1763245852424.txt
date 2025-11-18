@@ -1,0 +1,120 @@
+"""
+Staircase Threshold Calculator
+--------------------------------
+Paste your contrast sequence into CONTRASTS below.
+Run the script. It will:
+
+1) Detect reversal points (direction changes).
+2) Discard early unstable reversals.
+3) Take the last N reversals.
+4) Compute the threshold = mean of those reversal contrasts.
+5) Print everything clearly.
+
+This is optimized for Cone Contrast Tests (CCT) but works for any staircase.
+"""
+
+import numpy as np
+
+# ================================
+# USER INPUT: PASTE YOUR CONTRASTS HERE
+# Example: [32, 16, 8, 16, 8, 4, 8, 4, 2, 4, 2, 1, 2, 1]
+# ================================
+CONTRASTS = [32, 16, 8, 16, 8, 4, 8, 4, 2, 4, 2, 1, 2, 1]
+
+# How many reversals to average (typically 6–12)
+LAST_N = 6
+
+# How many early reversals to discard (common: 1 or 2)
+DISCARD_FIRST = 1
+
+
+# ==========================================
+# Staircase Reversal Detection + Threshold
+# ==========================================
+
+def find_reversals(contrasts):
+    """
+    Identify reversals: points where the contrast direction changes.
+    Returns: list of (index, contrast_value, (prev_dir, new_dir)).
+    """
+    contrasts = np.asarray(contrasts, dtype=float)
+    if len(contrasts) < 3:
+        return []
+
+    diffs = np.diff(contrasts)
+    dirs = np.sign(diffs)  # +1 up, -1 down, 0 same
+
+    reversals = []
+    prev_dir = None
+
+    # initialize prev_dir to the first non-zero direction
+    for d in dirs:
+        if d != 0:
+            prev_dir = d
+            break
+
+    # scan through remaining differences
+    for i in range(1, len(dirs)):
+        curr = dirs[i]
+        if curr == 0:
+            continue  # ignore plateaus
+
+        if curr != prev_dir and prev_dir is not None:
+            # reversal at contrasts[i]
+            rev_index = i
+            reversals.append((rev_index, contrasts[rev_index], (prev_dir, curr)))
+        prev_dir = curr
+
+    return reversals
+
+
+def threshold_from_reversals(contrasts, last_n=6, discard_first=1):
+    reversals = find_reversals(contrasts)
+    if not reversals:
+        return {"error": "No reversals detected. Check your data."}
+
+    rev_values = [r[1] for r in reversals]
+
+    # drop early unstable reversals
+    if discard_first > 0:
+        rev_values = rev_values[discard_first:]
+
+    # take last N
+    used = rev_values[-last_n:] if len(rev_values) >= 1 else []
+
+    if not used:
+        return {"error": "Not enough reversals to compute threshold."}
+
+    used_arr = np.array(used, dtype=float)
+
+    return {
+        "total_reversals_found": len(reversals),
+        "reversal_points": reversals,
+        "used_for_threshold": used,
+        "threshold_mean": float(np.mean(used_arr)),
+        "threshold_std": float(np.std(used_arr, ddof=1)) if len(used_arr) > 1 else 0.0
+    }
+
+
+# =========================
+# RUN & PRINT RESULTS
+# =========================
+result = threshold_from_reversals(CONTRASTS, LAST_N, DISCARD_FIRST)
+
+print("\n===== STAIRCASE THRESHOLD REPORT =====\n")
+
+if "error" in result:
+    print("ERROR:", result["error"])
+else:
+    print("Total reversals detected:", result["total_reversals_found"])
+    print("\nReversal points (index, contrast, direction-change):")
+    for r in result["reversal_points"]:
+        print("  ->", r)
+
+    print("\nReversals used for threshold:", result["used_for_threshold"])
+    print("Number used:", len(result["used_for_threshold"]))
+
+    print("\nEstimated Threshold (mean of last N reversals):", result["threshold_mean"])
+    print("Standard deviation:", result["threshold_std"])
+
+print("\n=======================================\n")
